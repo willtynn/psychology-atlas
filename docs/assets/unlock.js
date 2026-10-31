@@ -1,10 +1,21 @@
 /* Public loader. The password and decrypted content remain in this page's memory. */
 (()=>{'use strict';
 const $=s=>document.querySelector(s),base=new URL(document.body.dataset.root,location.href),encoder=new TextEncoder();
-const frame=$('#book-frame');let bundle=null,downloads=[],busy=false;
+const frame=$('#book-frame');let bundle=null,downloads=[],busy=false,pdfRequests=new Set();
 const bytes=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 function route(){let path=location.pathname.slice(base.pathname.length);return !path||path.endsWith('/')?path+'index.html':path}
-function release(){downloads.forEach(url=>URL.revokeObjectURL(url));downloads=[]}
+function release(){pdfRequests.forEach(c=>c.abort());pdfRequests.clear();downloads.forEach(url=>URL.revokeObjectURL(url));downloads=[]}
+window.atlasLoadPdfPage=async(slug,page)=>{
+ const session=bundle,info=session?.pdfs?.[slug];if(!info||!Number.isInteger(page)||page<1||page>info.pages)throw Error('原文尚未准备好');
+ const controller=new AbortController();pdfRequests.add(controller);
+ try{
+  const response=await fetch(new URL(`pdf/${slug}/${String(page).padStart(4,'0')}.bin`,base),{credentials:'omit',signal:controller.signal});if(!response.ok)throw Error('无法加载原文，请检查网络后重试');
+  const encrypted=new Uint8Array(await response.arrayBuffer());const key=await crypto.subtle.importKey('raw',bytes(info.key),'AES-GCM',false,['decrypt']);
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:encrypted.slice(0,12),additionalData:encoder.encode(`psychology-atlas-pdf-v1:${slug}:${page}`),tagLength:128},key,encrypted.slice(12));
+  if(bundle!==session||controller.signal.aborted)throw Error('阅读已结束');
+  return new Blob([plain],{type:'application/pdf'});
+ }finally{pdfRequests.delete(controller)}
+};
 function fileUrl(name){const data=bundle.files[name];if(!data)throw Error('Missing protected file');const url=URL.createObjectURL(new Blob([data],{type:name.endsWith('.json')?'application/json;charset=utf-8':'application/xml;charset=utf-8'}));downloads.push(url);return url}
 function go(url,push=true){const target=new URL(url,location.href);if(target.origin!==base.origin||!target.pathname.startsWith(base.pathname))return false;let name=target.pathname.slice(base.pathname.length);if(!name||name.endsWith('/'))name+='index.html';if(!bundle.files[name]||!name.endsWith('.html'))return false;if(push)history.pushState(null,'',target.pathname+target.search+target.hash);show(name,target.hash);return true}
 function show(name,hash=''){
