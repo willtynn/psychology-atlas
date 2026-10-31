@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><meta name="theme-color" content="#175f70">
+<title>心理学教材 · 密码解锁</title><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/unlock.css"><script src="../assets/unlock.js" defer></script></head>
+<body data-root="../"><main id="gate"><section class="login-card" aria-labelledby="login-title">
+<div class="brand">PSYCHOLOGY / STUDY ATLAS</div><div class="lock-symbol" aria-hidden="true">⌑</div>
+<h1 id="login-title">开启你的知识书架</h1><p class="intro">输入访问密码，继续阅读教材导图。</p>
+<form id="unlock-form"><label for="password">访问密码</label><div class="password-field"><input id="password" type="password" autocomplete="current-password" required aria-describedby="message" autofocus><button id="show-password" type="button" aria-pressed="false" aria-label="显示密码">显示</button></div>
+<button id="submit" type="submit">解锁书架 <span aria-hidden="true">→</span></button><p id="message" role="status" aria-live="polite"></p></form>
+<p class="footnote">密码仅在当前浏览器中用于解密。<br>刷新页面或锁定后，需要重新输入。</p></section><div class="gate-footer">从全书脉络，到每一个知识点。</div></main>
+<section id="reader" hidden aria-label="已解锁的教材"><header class="session-bar"><span>知识书架 <small>已解锁 · 当前页面有效</small></span><button id="lock" type="button">锁定并退出</button></header><iframe id="book-frame" title="教材思维导图" referrerpolicy="no-referrer"></iframe></section>
+<noscript>请启用 JavaScript 后使用密码解锁。</noscript></body></html>
