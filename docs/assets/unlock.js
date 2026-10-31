@@ -9,7 +9,7 @@ window.atlasLoadPdfPage=async(slug,page)=>{
  const session=bundle,info=session?.pdfs?.[slug];if(!info||!Number.isInteger(page)||page<1||page>info.pages)throw Error('原文尚未准备好');
  const controller=new AbortController();pdfRequests.add(controller);
  try{
-  const response=await fetch(new URL(`pdf/${slug}/${String(page).padStart(4,'0')}.bin`,base),{credentials:'omit',signal:controller.signal});if(!response.ok)throw Error('无法加载原文，请检查网络后重试');
+  const response=await fetch(new URL(`pdf/${slug}/${String(page).padStart(4,'0')}.bin?v=${info.revision||info.sourceSha256.slice(0,16)}`,base),{credentials:'omit',signal:controller.signal});if(!response.ok)throw Error('无法加载原文，请检查网络后重试');
   const encrypted=new Uint8Array(await response.arrayBuffer());const key=await crypto.subtle.importKey('raw',bytes(info.key),'AES-GCM',false,['decrypt']);
   const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:encrypted.slice(0,12),additionalData:encoder.encode(`psychology-atlas-pdf-v1:${slug}:${page}`),tagLength:128},key,encrypted.slice(12));
   if(bundle!==session||controller.signal.aborted)throw Error('阅读已结束');
